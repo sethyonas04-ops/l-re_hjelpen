@@ -3,51 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lærehjelp Pro - Smart AI</title>
+    <title>Lærehjelp Pro - Universal AI</title>
     <style>
         :root {
             --primary: #4a90e2;
             --ai-bg: #f1f3f4;
             --user-bg: #007bff;
             --accent: #f39c12;
+            --lock-bg: #fff3cd;
         }
 
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8f9fa; }
         .hidden { display: none !important; }
         
-        /* Layout */
         section { padding: 30px 15px; max-width: 800px; margin: 0 auto; text-align: center; height: 100vh; display: flex; flex-direction: column; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 10px 0; cursor: pointer; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 10px 0; cursor: pointer; transition: 0.2s; }
         
-        /* Chat Design */
         #chat-box { flex: 1; background: white; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #ffffff; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         
-        .msg { padding: 14px 18px; border-radius: 18px; max-width: 80%; line-height: 1.5; text-align: left; font-size: 1rem; }
+        .msg { padding: 14px 18px; border-radius: 18px; max-width: 80%; line-height: 1.5; text-align: left; font-size: 1rem; position: relative; }
         .ai { background: var(--ai-bg); align-self: flex-start; color: #202124; border-bottom-left-radius: 4px; }
         .user { background: var(--user-bg); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         
-        .control-q { border-left: 4px solid var(--accent); background: #fff8e1; padding: 10px; margin-top: 10px; font-style: italic; border-radius: 5px; }
+        .status-bar { padding: 8px; font-size: 0.85rem; font-weight: bold; transition: 0.3s; }
+        .locked { background: var(--lock-bg); color: #856404; }
+        .unlocked { background: #d4edda; color: #155724; }
 
         .input-area { padding: 20px; border-top: 1px solid #eee; display: flex; gap: 10px; }
         input { flex: 1; padding: 12px 20px; border: 1px solid #ddd; border-radius: 30px; outline: none; font-size: 1rem; }
         .btn-send { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
 
-        /* Trinn-knapper */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 20px; }
         .btn-opt { padding: 15px; border: 2px solid var(--primary); border-radius: 12px; background: white; cursor: pointer; font-weight: bold; }
-        .btn-opt:hover { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
     <section id="landing">
-        <h1 style="font-size: 3rem; margin-top: 50px;">Lærehjelp</h1>
-        <p>Din personlige AI-lærer</p>
-        <div style="flex:1; display:flex; align-items:center; justify-content:center;">
-            <div style="width:200px; height:200px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:5rem;">🎓</div>
-        </div>
-        <button class="btn-send" style="padding: 20px 80px; font-size: 1.5rem;" onclick="show('grade-select')">Start</button>
+        <h1 style="font-size: 3rem; color: var(--primary);">Lærehjelp Universal</h1>
+        <p>Spør meg om alle skolefag!</p>
+        <button class="btn-send" style="padding: 20px 80px;" onclick="show('grade-select')">Start</button>
     </section>
 
     <section id="grade-select" class="hidden">
@@ -56,24 +52,23 @@
     </section>
 
     <section id="dashboard" class="hidden">
-        <h2 id="userHeader">Lærehjelp</h2>
-        <div class="card" onclick="show('chat-section')"><h3>🤖 AI Lærepartner</h3><p>Forklarer alt og stiller kontrollspørsmål.</p></div>
-        <div class="card" onclick="alert('Quiz-modul er klar!')"><h3>📝 Quiz</h3><p>Test kunnskapen din.</p></div>
-        <div class="card" onclick="alert('Glose-modul er klar!')"><h3>🔤 Gloseprøve</h3><p>Øv på gloser.</p></div>
-        <button onclick="show('grade-select')" style="background:none; border:none; color:gray; cursor:pointer;">← Bytt trinn</button>
+        <h2 id="userHeader">Dashbord</h2>
+        <div class="card" onclick="show('chat-section')"><h3>🤖 Super AI</h3><p>Kan svare på alt fra matte til historie.</p></div>
+        <button onclick="show('grade-select')" style="margin-top:20px; border:none; background:none; cursor:pointer; color:blue;">Bytt trinn</button>
     </section>
 
     <section id="chat-section" class="hidden">
         <div id="chat-box">
+            <div id="lock-status" class="status-bar unlocked">🟢 Klar for skole-spørsmål</div>
             <div id="messages">
-                <div class="msg ai">Hei! Jeg er klar til å hjelpe deg. Spør meg om hva som helst fra skolefagene dine!</div>
+                <div class="msg ai">Hei! Jeg er oppdatert med kunnskap om de fleste skolefag. Hva vil du lære om nå?</div>
             </div>
             <div class="input-area">
-                <input type="text" id="userInput" placeholder="Spør om f.eks. 'fotosyntese' eller 'matte'...">
+                <input type="text" id="userInput" placeholder="Spør om vikingtiden, brøk, celler...">
                 <button class="btn-send" onclick="handleInput()">Send</button>
             </div>
         </div>
-        <button onclick="show('dashboard')" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-top:10px;">← Tilbake</button>
+        <button onclick="show('dashboard')" style="margin-top:10px; border:none; background:none; cursor:pointer;">← Tilbake</button>
     </section>
 
     <script>
@@ -86,8 +81,7 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        // Generer trinn
-        const grades = ["3. klasse", "4. klasse", "5. klasse", "6. klasse", "7. klasse", "8. klasse", "9. klasse", "10. klasse", "VG1", "VG2", "VG3"];
+        const grades = ["1-4. trinn", "5-7. trinn", "Ungdomsskolen", "Videregående"];
         grades.forEach(g => {
             const b = document.createElement('button');
             b.className = 'btn-opt';
@@ -96,60 +90,53 @@
             document.getElementById('gradeGrid').appendChild(b);
         });
 
-        // --- SMART AI LOGIKK ---
-        const brain = [
-            {
-                keywords: ["pi", "omkrets", "sirkel", "3.14"],
-                explain: "Pi (π) er et magisk tall i matematikken! Det forteller oss forholdet mellom omkretsen og diameteren til en sirkel. Uansett hvor stor sirkelen er, er omkretsen alltid ca. 3,14 ganger lenger enn tvers over.",
-                question: "Hvor mange ganger lenger enn diameteren er omkretsen ca.?",
-                answer: "3"
-            },
-            {
-                keywords: ["fotosyntese", "planter", "sollys", "oksygen"],
-                explain: "Fotosyntese er plantenes måte å lage energi på. De bruker sollys, vann og CO2 for å lage sukker (mat) og oksygen (som vi puster).",
-                question: "Hva heter gassen som plantene lager og som vi mennesker trenger for å puste?",
-                answer: "oksygen"
-            },
-            {
-                keywords: ["verdenskrig", "krigen", "1914", "tyskland"],
-                explain: "Første verdenskrig var en stor konflikt som endret hele verden. Den startet i 1914 og varte til 1918. Mange land i Europa kjempet mot hverandre i skyttergraver.",
-                question: "I hvilket årstall startet den første verdenskrigen?",
-                answer: "1914"
-            }
+        // --- DEN STORE SKOLE-HJERNEN ---
+        const schoolSubjects = [
+            { keys: ["viking", "norge", "historie"], text: "Vikingtiden var en spennende periode fra ca. år 793 til 1066. De var flinke skipsbyggere og seilte over hele verden.", q: "I hvilket århundre startet vikingtiden?", a: "8" },
+            { keys: ["brøk", "matte", "dele"], text: "Brøk handler om å dele noe opp i flere deler. Tellere er tallet øverst, og nevneren er tallet nederst.", q: "Hva kaller vi tallet som står nederst i en brøk?", a: "nevner" },
+            { keys: ["celle", "kroppen", "naturfag"], text: "Celler er de minste byggesteinene i alt levende. Både planter, dyr og mennesker er bygget opp av milliarder av celler.", q: "Hva kaller vi de minste byggesteinene i kroppen?", a: "celle" },
+            { keys: ["verb", "norsk", "ordklasse"], text: "Verb er ord som beskriver en handling eller en tilstand. Det er ting man kan gjøre, som å løpe, smile eller lese.", q: "Er 'løpe' et substantiv eller et verb?", a: "verb" },
+            { keys: ["hovedstad", "geografi", "land"], text: "Alle land har som regel en hovedstad hvor regjeringen sitter. I Norge er dette Oslo.", q: "Hva heter hovedstaden i Norge?", a: "oslo" }
         ];
 
         function handleInput() {
             const inp = document.getElementById('userInput');
-            const val = inp.value.trim();
+            const val = inp.value.trim().toLowerCase();
             if(!val) return;
 
-            addMsg(val, 'user');
+            addMsg(inp.value, 'user');
             inp.value = "";
 
             setTimeout(() => {
-                // Hvis vi venter på svar på et kontrollspørsmål
+                const statusBar = document.getElementById('lock-status');
+                
                 if(isWaitingForAnswer) {
-                    if(val.toLowerCase().includes(expectedAnswer)) {
-                        addMsg("Helt riktig! Utrolig bra. Hva mer vil du lære om nå?", "ai");
+                    if(val.includes(expectedAnswer)) {
+                        addMsg("Helt riktig! Bra jobbet. Har du flere spørsmål om skolen?", "ai");
                         isWaitingForAnswer = false;
+                        statusBar.innerText = "🟢 Klar for spørsmål";
+                        statusBar.className = "status-bar unlocked";
                     } else {
-                        addMsg("Ikke helt, men du er nær! Tenk over det jeg forklarte i sted og prøv å svar på nytt.", "ai");
+                        addMsg("Ikke helt. Tenk på det jeg forklarte i forrige melding!", "ai");
                     }
                     return;
                 }
 
-                // Finn beste match basert på nøkkelord
-                let found = brain.find(item => item.keywords.some(k => val.toLowerCase().includes(k)));
+                // Sjekk om spørsmålet passer med noen av fagene våre
+                let found = schoolSubjects.find(s => s.keys.some(k => val.includes(k)));
 
                 if(found) {
-                    addMsg(found.explain, "ai");
+                    addMsg(found.text, "ai");
                     setTimeout(() => {
-                        addMsg("💡 Kontrollspørsmål: " + found.question, "ai");
+                        addMsg("💡 KONTROLLSPØRSMÅL: " + found.q, "ai");
                         isWaitingForAnswer = true;
-                        expectedAnswer = found.answer;
+                        expectedAnswer = found.a;
+                        statusBar.innerText = "🔒 Svar på spørsmålet for å fortsette";
+                        statusBar.className = "status-bar locked";
                     }, 1000);
                 } else {
-                    addMsg("Det høres spennende ut! Kan du fortelle meg litt mer om hva du tenker på, så skal jeg forklare det så godt jeg kan?", "ai");
+                    // Hvis AI-en ikke kjenner temaet, svarer den generelt men lærerikt
+                    addMsg("Det er et spennende tema innen " + currentGrade + "! Jeg kan forklare det generelt: Skolefag handler ofte om å finne sammenhenger. Kan du prøve å forklare meg hva du har lært om dette på skolen i dag?", "ai");
                 }
             }, 700);
         }
