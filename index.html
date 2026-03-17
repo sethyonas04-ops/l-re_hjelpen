@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lærehjelp - Smart AI & Quiz</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #27ae60;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --ai-bubble: #e1f5fe;
+            --user-bubble: #007bff;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: #333; }
+        .hidden { display: none !important; }
+        section { padding: 40px 20px; max-width: 800px; margin: 0 auto; text-align: center; height: 100vh; box-sizing: border-box; }
+
+        .btn { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
+
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); cursor: pointer; margin-bottom: 20px; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+
+        /* --- Forbedret Chat-grensesnitt --- */
+        #chat-container { display: flex; flex-direction: column; height: 80%; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        
+        .msg { padding: 12px 16px; border-radius: 18px; max-width: 75%; line-height: 1.5; font-size: 0.95rem; position: relative; }
+        .ai { background: var(--ai-bubble); align-self: flex-start; border-bottom-left-radius: 2px; color: #0d47a1; }
+        .user { background: var(--user-bubble); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        .input-area { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 1rem; }
+
+        /* --- Quiz & Trinn --- */
+        .grade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+        .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <section id="landing">
+        <h1 style="font-size: 2.5rem;">Velkommen til Lærehjelp</h1>
+        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400" style="width:100%; max-width:350px; border-radius:20px; margin: 20px 0;">
+        <br>
+        <button class="btn btn-primary" style="padding: 20px 60px; font-size: 1.2rem;" onclick="goTo('grade-select')">Start</button>
+    </section>
+
+    <section id="grade-select" class="hidden">
+        <h2>Hvilket trinn går du på?</h2>
+        <div class="grade-grid" id="gradeContainer"></div>
+    </section>
+
+    <section id="dashboard" class="hidden">
+        <h1 id="dashTitle">Lærehjelp</h1>
+        <div class="card" onclick="goTo('ai-chat')">
+            <h3>🤖 AI Lærepartner</h3>
+            <p>Spør om hva som helst. Jeg hjelper deg å forstå, ikke bare finne svaret.</p>
+        </div>
+        <div class="card" onclick="openQuizMenu()">
+            <h3>📝 Quiz</h3>
+            <p>Test deg selv i alle de viktige fagene.</p>
+        </div>
+        <div class="card" onclick="goTo('glose-section')">
+            <h3>🔤 Gloseprøve</h3>
+            <p>Øv på ord og begreper til prøven.</p>
+        </div>
+        <button class="btn btn-outline" onclick="goTo('grade-select')">← Bytt trinn</button>
+    </section>
+
+    <section id="ai-chat" class="hidden">
+        <div id="chat-container">
+            <div id="messages">
+                <div class="msg ai">Hei! Jeg er her for å hjelpe deg med skolearbeidet. Hva lurer du på? Jeg forklarer gjerne konsepter for deg!</div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="chatInput" placeholder="Skriv for eksempel: 'Hva er pi?'">
+                <button class="btn btn-primary" onclick="handleChat()">Send</button>
+            </div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:10px;" onclick="goTo('dashboard')">Tilbake til menyen</button>
+    </section>
+
+    <section id="quiz-menu" class="hidden">
+        <h2>Hvilket fag vil du ha quiz i?</h2>
+        <div class="subject-grid" id="subjectGrid"></div>
+        <br><button class="btn btn-outline" onclick="goTo('dashboard')">Tilbake</button>
+    </section>
+
+    <script>
+        let userGrade = "";
+
+        // Navigasjon
+        function goTo(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // Trinn-knapper
+        const grades = ["3. klasse", "4. klasse", "5. klasse", "6. klasse", "7. klasse", "8. klasse", "9. klasse", "10. klasse", "VG1", "VG2", "VG3"];
+        const gc = document.getElementById('gradeContainer');
+        grades.forEach(g => {
+            let b = document.createElement('button');
+            b.className = 'btn btn-outline';
+            b.innerText = g;
+            b.onclick = () => { userGrade = g; document.getElementById('dashTitle').innerText = "Lærehjelp for " + g; goTo('dashboard'); };
+            gc.appendChild(b);
+        });
+
+        // --- SMART AI LOGIKK ---
+        const knowledgeBase = [
+            { key: ["pi", "π"], response: "Pi er et tegn vi bruker for å beskrive forholdet mellom omkretsen og diameteren i en sirkel. Uansett hvor stor sirkelen er, vil omkretsen alltid være litt over 3 ganger så lang som diameteren. Vil du vite hvordan vi bruker dette i en formel?" },
+            { key: ["fotosyntese"], response: "Fotosyntese er plantenes måte å lage mat på! De bruker sollys, vann og CO2 for å lage energi (sukker). Som en bonus lager de oksygenet vi puster. Tenk på det som et naturlig solcellepanel!" },
+            { key: ["verdenskrig", "1914", "1940"], response: "Kriger i historien handler ofte om konflikter mellom land, allianser og maktkamp. Det er viktig å se på hvorfor det startet fremfor bare årstallene. Hvilken av krigene tenker du på spesifikt?" },
+            { key: ["verb", "substantiv"], response: "I norsk handler ordklasser om hvilken 'jobb' ordet gjør. Substantiv er navn på ting, mens verb er ting man gjør. Kan du finne verbet i setningen 'Læreren smiler'?" }
+        ];
+
+        function handleChat() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim().toLowerCase();
+            if (!text) return;
+
+            addMsg(input.value, 'user');
+            input.value = "";
+
+            setTimeout(() => {
+                let aiResponse = "Det er et godt spørsmål! For å forstå dette bedre, kan vi se på hvordan det fungerer i praksis. Kan du fortelle meg litt mer om hva du har lært om dette på skolen så langt?";
+
+                // Sjekk om vi har kunnskap om temaet
+                for (let entry of knowledgeBase) {
+                    if (entry.key.some(k => text.includes(k))) {
+                        aiResponse = entry.response;
+                        break;
+                    }
+                }
+
+                addMsg(aiResponse, 'ai');
+            }, 600);
+        }
+
+        function addMsg(txt, type) {
+            const m = document.createElement('div');
+            m.className = `msg ${type}`;
+            m.innerText = txt;
+            document.getElementById('messages').appendChild(m);
+            document.getElementById('messages').scrollTop = 9999;
+        }
+
+        // --- QUIZ MENY ---
+        const subjects = ["Norsk", "Matte", "Engelsk", "Naturfag", "Samfunnsfag", "KRLE", "Historie", "Geografi"];
+        function openQuizMenu() {
+            const grid = document.getElementById('subjectGrid');
+            grid.innerHTML = "";
+            subjects.forEach(s => {
+                const b = document.createElement('button');
+                b.className = 'btn btn-outline';
+                b.innerText = s;
+                b.onclick = () => alert("Starter quiz i " + s + " for " + userGrade);
+                grid.appendChild(b);
+            });
+            goTo('quiz-menu');
+        }
+
+        // Enter-tast for chat
+        document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleChat() });
+    </script>
+</body>
+</html>
