@@ -1,189 +1,145 @@
-// =====================================================
-// 🚀 EXTREME DUOLINGO-STYLE AI LEARNING APP
-// FULL FEATURE SET:
-// - Login system
-// - XP + Levels + Streaks
-// - Achievements
-// - Multiple subjects
-// - Daily challenges
-// - Voice input
-// - LocalStorage save
-// - Fake AI + API ready
-// =====================================================
-
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Learning Extreme</title>
-
+<title>LæreHjelp</title>
 <style>
-body { margin:0; font-family:Arial; background:#0f172a; color:white; }
-.hidden { display:none; }
-.container { max-width:900px; margin:auto; padding:20px; }
-.msg { padding:10px; margin:5px; border-radius:10px; max-width:70%; }
-.user { background:#3b82f6; margin-left:auto; }
-.ai { background:#334155; }
-button { padding:10px; margin:5px; border:none; border-radius:10px; cursor:pointer; }
-input { padding:10px; width:70%; border-radius:10px; border:none; }
-.badge { background:gold; color:black; padding:5px 10px; margin:5px; border-radius:10px; display:inline-block; }
-.top { display:flex; justify-content:space-between; }
+body{margin:0;font-family:Arial;background:#f5f7fb}
+section{display:none;height:100vh;justify-content:center;align-items:center;flex-direction:column;text-align:center}
+section.active{display:flex}
+button{padding:12px 20px;font-size:16px;border:none;border-radius:10px;cursor:pointer;background:#2b59ff;color:white}
+
+/* Startside */
+#start{background:url('https://picsum.photos/1600/900') center/cover no-repeat;color:white}
+#start h1{font-size:48px;margin-bottom:20px;text-shadow:0 2px 10px rgba(0,0,0,0.5)}
+
+/* Trinnvalg */
+#level button{margin:5px}
+
+/* Hovedside */
+nav{display:flex;gap:10px;justify-content:center;background:#1e3fd1;padding:10px}
+nav button{background:white;color:black}
+.card{background:white;padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);margin:10px}
+#chatBox{height:200px;overflow:auto;border:1px solid #ddd;padding:10px;border-radius:10px;margin-bottom:10px}
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<!-- STARTSIDE -->
+<section id="start" class="active">
+<h1>Velkommen til LæreHjelp</h1>
+<button onclick="goToLevel()">Start</button>
+</section>
 
-<div id="login">
-<h2>Login</h2>
-<input id="username" placeholder="Brukernavn">
-<button onclick="login()">Start</button>
+<!-- VELG TRINN -->
+<section id="level">
+<h2>Velg trinn</h2>
+<div id="levels"></div>
+</section>
+
+<!-- HOVEDSIDE -->
+<section id="main">
+<nav>
+<button onclick="showTab('chat')">AI Chat</button>
+<button onclick="showTab('quiz')">Quiz</button>
+<button onclick="showTab('pugging')">Pugging</button>
+</nav>
+
+<div id="chat" class="card">
+<h3>AI LæreChat</h3>
+<div id="chatBox"></div>
+<input id="chatInput" placeholder="Still et spørsmål...">
+<button onclick="sendMessage()">Send</button>
 </div>
 
-<div id="app" class="hidden">
-
-<div class="top">
-<div>👤 <span id="userDisplay"></span></div>
-<div>🔥 Streak: <span id="streak"></span></div>
-<div>⭐ Level: <span id="level"></span> | XP: <span id="xp"></span></div>
+<div id="quiz" class="card" style="display:none">
+<h3>Quiz</h3>
+<p id="question"></p>
+<div id="options"></div>
+<p id="result"></p>
 </div>
 
-<div id="badges"></div>
-
-<h3>📚 Velg fag</h3>
-<button onclick="setSubject('matte')">Matte</button>
-<button onclick="setSubject('norsk')">Norsk</button>
-<button onclick="setSubject('engelsk')">Engelsk</button>
-<button onclick="setSubject('naturfag')">Naturfag</button>
-
-<h3>💬 Chat</h3>
-<div id="messages" style="height:300px; overflow:auto;"></div>
-
-<input id="input" placeholder="Spør AI...">
-<button onclick="send()">Send</button>
-<button onclick="voice()">🎤</button>
-
+<div id="pugging" class="card" style="display:none">
+<h3>Puggehjelp</h3>
+<input id="studyInput" placeholder="Skriv noe...">
+<button onclick="addCard()">Legg til</button>
+<div id="cards"></div>
 </div>
-
-</div>
+</section>
 
 <script>
-let db = JSON.parse(localStorage.getItem("users")||"{}");
-let user=null;
-let subject="matte";
-
-function login(){
-    let u=username.value;
-    if(!db[u]){
-        db[u]={xp:0,level:1,streak:0,badges:[],lastLogin:null};
-    }
-    user=db[u];
-    userDisplay.innerText=u;
-
-    updateStreak();
-    save();
-
-    loginDiv();
+function goToLevel(){
+ document.getElementById('start').classList.remove('active');
+ document.getElementById('level').classList.add('active');
 }
 
-function loginDiv(){
-    login.classList.add("hidden");
-    app.classList.remove("hidden");
-    updateUI();
+const levels=["3. klasse","4. klasse","5. klasse","6. klasse","7. klasse","8. klasse","9. klasse","10. klasse","VG1","VG2","VG3"];
+
+levels.forEach(l=>{
+ let btn=document.createElement('button');
+ btn.textContent=l;
+ btn.onclick=()=>goToMain();
+ document.getElementById('levels').appendChild(btn);
+});
+
+function goToMain(){
+ document.getElementById('level').classList.remove('active');
+ document.getElementById('main').classList.add('active');
 }
 
-function updateStreak(){
-    let today=new Date().toDateString();
-    if(user.lastLogin!==today){
-        user.streak++;
-        user.lastLogin=today;
-    }
+function showTab(tab){
+ document.querySelectorAll('#main .card').forEach(c=>c.style.display='none');
+ document.getElementById(tab).style.display='block';
 }
 
-function save(){
-    db[userDisplay.innerText]=user;
-    localStorage.setItem("users",JSON.stringify(db));
+function sendMessage(){
+ let input=document.getElementById('chatInput');
+ let box=document.getElementById('chatBox');
+ let msg=input.value;
+ if(!msg) return;
+ box.innerHTML+=`<div>Du: ${msg}</div>`;
+ box.innerHTML+=`<div style='color:blue'>AI: Tenk steg for steg. Hva vet du allerede?</div>`;
+ input.value="";
+ box.scrollTop=box.scrollHeight;
 }
 
-function updateUI(){
-    xp.innerText=user.xp;
-    level.innerText=user.level;
-    streak.innerText=user.streak;
-    badges.innerHTML=user.badges.map(b=>`<div class='badge'>${b}</div>`).join("");
+const quiz=[
+{q:"Hva er 2+2?",a:["3","4","5"],c:1},
+{q:"Hva er hovedstaden i Norge?",a:["Oslo","Bergen","Trondheim"],c:0}
+];
+let i=0;
+
+function loadQuiz(){
+ let q=quiz[i];
+ document.getElementById('question').textContent=q.q;
+ let opt=document.getElementById('options');
+ opt.innerHTML="";
+ q.a.forEach((o,index)=>{
+ let b=document.createElement('button');
+ b.textContent=o;
+ b.onclick=()=>answer(index);
+ opt.appendChild(b);
+ });
 }
 
-function gainXP(x){
-    user.xp+=x;
-    if(user.xp>=user.level*50){
-        user.xp=0;
-        user.level++;
-        add("LEVEL UP! 🚀","ai");
-    }
-    unlockBadges();
-    save();
-    updateUI();
+function answer(x){
+ let q=quiz[i];
+ document.getElementById('result').textContent = x===q.c ? "Riktig!" : "Prøv igjen!";
+ i=(i+1)%quiz.length;
+ setTimeout(loadQuiz,1000);
 }
+loadQuiz();
 
-function unlockBadges(){
-    if(user.level===2 && !user.badges.includes("Starter")){
-        user.badges.push("Starter");
-    }
-    if(user.streak===3 && !user.badges.includes("Streak🔥")){
-        user.badges.push("Streak🔥");
-    }
+function addCard(){
+ let text=document.getElementById('studyInput').value;
+ if(!text) return;
+ let div=document.createElement('div');
+ div.className='card';
+ div.textContent=text;
+ document.getElementById('cards').appendChild(div);
+ document.getElementById('studyInput').value="";
 }
-
-const knowledge={
-    matte:"Matte handler om tall og problemløsning.",
-    norsk:"Norsk handler om språk og tekster.",
-    engelsk:"English is a global language.",
-    naturfag:"Naturfag forklarer verden rundt oss."
-};
-
-function send(){
-    let text=input.value;
-    if(!text) return;
-
-    add(text,"user");
-    input.value="";
-
-    setTimeout(()=>{
-        let response = fakeAI(text);
-        add(response,"ai");
-        gainXP(10);
-    },500);
-}
-
-function fakeAI(text){
-    // ⚠️ HER KAN DU KOBLE TIL EKTE AI API
-    return knowledge[subject] + "\n\nSvar på: " + text;
-}
-
-function add(t,type){
-    let d=document.createElement("div");
-    d.className="msg "+type;
-    d.innerText=t;
-    messages.appendChild(d);
-    messages.scrollTop=9999;
-}
-
-function setSubject(s){
-    subject=s;
-    add("Du valgte " + s,"ai");
-}
-
-function voice(){
-    let rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
-    rec.lang="no-NO";
-    rec.start();
-    rec.onresult=(e)=>{
-        input.value=e.results[0][0].transcript;
-    }
-}
-
-input.addEventListener("keypress",e=>{ if(e.key==="Enter") send(); });
 </script>
 
 </body>
